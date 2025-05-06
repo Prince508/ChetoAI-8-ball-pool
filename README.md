@@ -51,7 +51,7 @@ The following are implemented:
 
 ## ▶️ How to Run
 
-1. Launch **8 Ball Pool** on your emulator (Bluestacks or LDPlayer).
+1. Launch **8 Ball Pool** window name that is opening the game shoudl have name **8 Ball Pool** or you can change this in main.cpp, Line 70.
 2. Run `ChetoAl.exe` from `x64/Debug/`.
 3. The overlay should appear on top of the game window.
 4. Move the cue – the extended guideline should reflect predicted paths based on current layout.
