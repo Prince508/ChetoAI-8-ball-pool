@@ -21,7 +21,7 @@ HWND InitializeOverlay(HINSTANCE hInstance, OverlayData* pOverlayData) {
     RegisterClassW(&wc);
 
     HWND hwnd = CreateWindowExW(
-        WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+        WS_EX_LAYERED | WS_EX_TOPMOST, // | WS_EX_TRANSPARENT
         CLASS_NAME,
         L"Overlay",
         WS_POPUP,
@@ -29,7 +29,8 @@ HWND InitializeOverlay(HINSTANCE hInstance, OverlayData* pOverlayData) {
         NULL, NULL, hInstance, NULL
     );
 
-    SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_COLORKEY);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
     ShowWindow(hwnd, SW_SHOW);
 
     if (!InitDirectX(hwnd, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), pOverlayData))

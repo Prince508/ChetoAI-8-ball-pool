@@ -60,7 +60,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     }
 
     // Initialize ONNX inference
-    ONNXInference detector("onnx_model/yolov11m-seg.onnx");
+    ONNXInference detector("D:/AimBotAI/ChetoAI/ChetoAI/onnx_model/yolov11m-seg.onnx");
 
     // Check if model loaded successfully
     if (!detector.isSessionValid()) {
@@ -69,8 +69,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     }
 
     // Initialize screen capture
-    while (true) {
-        cv::Mat frame = captureWindow(L"8 Ball Pool: The world's #1 Pool game - Google Chrome");
+    MSG msg = { 0 };
+    while (msg.message != WM_QUIT) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        cv::Mat frame = captureWindow(L"Redmi Note 5 Pro");
+        //cv::Mat frame = captureWindow(nullptr); // Captures entire desktop
         if (frame.empty()) continue;
 
         int frameWidth = frame.cols;
@@ -92,7 +99,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         PresentOverlay(&overlayData);
 
         if (GetAsyncKeyState(VK_END) & 1) break;
-        Sleep(16);
+        Sleep(16); // ~60 FPS
     }
 
     CleanupOverlay(&overlayData);

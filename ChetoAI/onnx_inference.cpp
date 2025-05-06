@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "Enums.h"
 #include <string>
+#include <filesystem>
 
 #ifndef ORTCHAR_T
 #ifdef _WIN32
@@ -41,6 +42,14 @@ std::string wstring_to_utf8(const std::wstring& wstr) {
 
 ONNXInference::ONNXInference(const std::string& modelPath)
     : env(ORT_LOGGING_LEVEL_WARNING, "ChetoAI") {
+
+    std::cout << "Trying to load model from: " << modelPath << std::endl;
+    if (!std::filesystem::exists(modelPath)) {
+        MessageBoxA(nullptr, ("Model file not found: " + modelPath).c_str(), "ONNX Load Error", MB_OK | MB_ICONERROR);
+        valid = false;
+        return;
+    }
+    
     try {
         sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
         // Convert the std::string model path to the required wide string format for Windows
@@ -61,14 +70,17 @@ ONNXInference::ONNXInference(const std::string& modelPath)
         // Use the C API to get the input name
         char* inputName = nullptr;
         Ort::GetApi().SessionGetInputName(*session, 0, allocator, &inputName);
-        inputNamesStr.emplace_back(std::string(inputName));
+        std::string inputNameStr(inputName);
         allocator.Free(inputName);
+        inputNamesStr.push_back(inputNameStr);
+        inputNames.push_back(inputNameStr.c_str());  // NEW
 
-        // Use the C API to get the output name
         char* outputName = nullptr;
         Ort::GetApi().SessionGetOutputName(*session, 0, allocator, &outputName);
-        outputNamesStr.emplace_back(std::string(outputName));
+        std::string outputNameStr(outputName);
         allocator.Free(outputName);
+        outputNamesStr.push_back(outputNameStr);
+        outputNames.push_back(outputNameStr.c_str());  // NEW
     }
     catch (const Ort::Exception& e) {
         valid = false;
@@ -78,7 +90,16 @@ ONNXInference::ONNXInference(const std::string& modelPath)
 
 std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
     std::vector<Detection> detections;
-    if (!valid) return detections;
+    std::cout << "Detected: " << detections.size() << " objects." << std::endl;
+    if (!valid) {
+        std::cerr << "[ERROR] ONNX model session is not valid." << std::endl;
+        return detections;
+    }
+
+    if (frame.empty()) {
+        std::cerr << "[ERROR] Input frame is empty." << std::endl;
+        return detections;
+    }
 
     cv::Mat resized;
     cv::resize(frame, resized, cv::Size(inputWidth, inputHeight));
@@ -98,8 +119,15 @@ std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
     Ort::Value inputTensor = Ort::Value::CreateTensor<float>(
         memoryInfo, inputTensorValues.data(), inputTensorValues.size(), inputShape.data(), inputShape.size());
 
-    std::vector<Ort::Value> outputTensors = session->Run(
-        Ort::RunOptions{ nullptr }, inputNames.data(), &inputTensor, 1, outputNames.data(), 1);
+    std::vector<Ort::Value> outputTensors;
+    try {
+        outputTensors = session->Run(
+            Ort::RunOptions{ nullptr }, inputNames.data(), &inputTensor, 1, outputNames.data(), 1);
+    }
+    catch (const Ort::Exception& e) {
+        std::cerr << "[ONNX Runtime ERROR] " << e.what() << std::endl;
+        return detections;
+    }
 
     float* outputData = outputTensors[0].GetTensorMutableData<float>();
     size_t outputSize = outputTensors[0].GetTensorTypeAndShapeInfo().GetElementCount();
