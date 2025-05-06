@@ -31,7 +31,7 @@ The following are implemented:
 2. **Visual Studio 2022** with C++ Desktop Development workload
 3. **DirectX SDK (June 2010)** (for legacy headers if needed)
 4. **ONNX Runtime 1.21.0** ([Download](https://github.com/microsoft/onnxruntime/releases))
-5. **OpenCV 4.x** installed and configured
+5. **OpenCV 4.x** ([Download](https://opencv.org/releases/))
 6. **Clone or download YOLOv11m-seg model** (already placed in `onnx_model/`)
 
 ---
@@ -56,7 +56,7 @@ The following are implemented:
 3. The overlay should appear on top of the game window.
 4. Move the cue – the extended guideline should reflect predicted paths based on current layout.
 
-> ⚠️ Ensure the emulator window is in the foreground.
+> ⚠️ Ensure the game window is in the foreground.
 
 ---
 
