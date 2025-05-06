@@ -21,12 +21,12 @@ void processDetections(const std::vector<Detection>& detections, Ball& cueBall, 
 
         switch (static_cast<ObjectType>(det.class_id)) {
         case ObjectType::White:
-            cueBall = { center, radius, BallType::Cue }; // Type 0 = cue
+            cueBall = { center, radius, BallType::Cue };
             cueFound = true;
             break;
         case ObjectType::Ball:
-            if (!targetFound) { // Pick the first detected ball as target
-                targetBall = { center, radius, BallType::Target }; // Type 1 = target
+            if (!targetFound) {
+                targetBall = { center, radius, BallType::Target };
                 targetFound = true;
             }
             break;
@@ -45,6 +45,11 @@ void processDetections(const std::vector<Detection>& detections, Ball& cueBall, 
             break;
         }
     }
+
+    // Optional debug
+    if (!cueFound || !targetFound || table.pockets.empty()) {
+        OutputDebugStringA("Warning: Missing cue/target ball or pockets.\n");
+    }
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
@@ -61,23 +66,22 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     // Initialize ONNX inference
     ONNXInference detector("D:/AimBotAI/ChetoAI/ChetoAI/onnx_model/yolov11m-seg.onnx");
-
-    // Check if model loaded successfully
     if (!detector.isSessionValid()) {
         MessageBoxA(nullptr, "Failed to load ONNX model!", "Error", MB_OK);
         return 1;
     }
 
-    // Initialize screen capture
     MSG msg = { 0 };
+    float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Line color
+
     while (msg.message != WM_QUIT) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 
-        cv::Mat frame = captureWindow(L"Redmi Note 5 Pro");
-        //cv::Mat frame = captureWindow(nullptr); // Captures entire desktop
+        // Capture the game frame (you can switch to nullptr for full screen)
+        cv::Mat frame = captureWindow(L"8 Ball Pool: The world's #1 Pool game - Google Chrome");
         if (frame.empty()) continue;
 
         int frameWidth = frame.cols;
@@ -91,14 +95,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
         ClearOverlay(&overlayData);
 
+        overlayData.deviceContext->OMSetRenderTargets(1, &overlayData.renderTargetView, nullptr);
+
+        //Test
+        DrawLine(100, 100, 600, 600, red, &overlayData);
+
         std::vector<LineSegment> guide = calculateGuideline(cueBall, targetBall, table);
-        float red[4] = { 1.0f, 0, 0, 1.0f };
         for (const auto& segment : guide)
             DrawLine(segment.start.x, segment.start.y, segment.end.x, segment.end.y, red, &overlayData);
 
         PresentOverlay(&overlayData);
 
         if (GetAsyncKeyState(VK_END) & 1) break;
+
         Sleep(16); // ~60 FPS
     }
 
