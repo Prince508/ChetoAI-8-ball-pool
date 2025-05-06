@@ -1,0 +1,54 @@
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.VC.opendb
+*.aps
+*.bak
+*.bsc
+*.ccold
+*.ilk
+*.lib
+*.lo
+*.obj
+*.pch
+*.pdb
+*.pgm
+*.res
+*.sbr
+*.sdf
+*.suo
+*.suom
+*.suo.lock
+*.tmp
+*.user
+*.vsp
+*.vspx
+*.vsscc
+*.vssettings
+*.vssscc
+*.tlog
+_UpgradeReport_Files/
+Debug/
+Release/
+x64/
+x86/
+build/ # If you have a build output directory
+[Dd]ebug*/
+[Rr]elease*/
+*.exe
+*.dll
+*.obj
+*.lib
+
+# OpenCV related (if not part of your source)
+# Depending on how you structured your project and included OpenCV
+# you might need to ignore the OpenCV build/install directory
+# For example:
+# /path/to/your/opencv/build/
+
+# Others
+*.log
+*.orig
+*.rej
+*.swp
+*~
