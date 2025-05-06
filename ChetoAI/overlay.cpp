@@ -55,7 +55,7 @@ bool InitDirectX(HWND hwnd, int width, int height, OverlayData* pOverlayData) {
         &pOverlayData->swapChain, &pOverlayData->device, nullptr, &pOverlayData->deviceContext)))
         return false;
 
-    ID3D11Texture2D* backBuffer;
+    ID3D11Texture2D* backBuffer = nullptr;
     pOverlayData->swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
     pOverlayData->device->CreateRenderTargetView(backBuffer, nullptr, &pOverlayData->renderTargetView);
     backBuffer->Release();

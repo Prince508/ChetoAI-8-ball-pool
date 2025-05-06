@@ -3,7 +3,7 @@
 
 // Helper: Convert HBITMAP to cv::Mat
 cv::Mat hbitmapToMat(HBITMAP hBitmap) {
-    BITMAP bmp;
+    BITMAP bmp = {0};
     GetObject(hBitmap, sizeof(BITMAP), &bmp);
     cv::Mat mat(bmp.bmHeight, bmp.bmWidth, CV_8UC4);
 

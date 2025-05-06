@@ -3,7 +3,7 @@
 
 // Helper: Calculate distance between two points
 float Physics::distance(const cv::Point2f& p1, const cv::Point2f& p2) {
-    return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
+    return static_cast<float>(std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2)));
 }
 
 // Helper: Normalize a vector
@@ -22,10 +22,10 @@ cv::Point2f Physics::reflectVector(const cv::Point2f& incident, const cv::Point2
 // Helper: Check if a line intersects a rectangle (table bounds)
 bool Physics::lineIntersectsRect(const cv::Point2f& start, const cv::Point2f& end, const cv::Rect& rect, cv::Point2f& intersection) {
     std::vector<cv::Point2f> sides[4] = {
-        {cv::Point2f(rect.x, rect.y), cv::Point2f(rect.x + rect.width, rect.y)}, // Top
-        {cv::Point2f(rect.x, rect.y + rect.height), cv::Point2f(rect.x + rect.width, rect.y + rect.height)}, // Bottom
-        {cv::Point2f(rect.x, rect.y), cv::Point2f(rect.x, rect.y + rect.height)}, // Left
-        {cv::Point2f(rect.x + rect.width, rect.y), cv::Point2f(rect.x + rect.width, rect.y + rect.height)} // Right
+        { {cv::Point2f(static_cast<float>(rect.x), static_cast<float>(rect.y)), cv::Point2f(static_cast<float>(rect.x + rect.width), static_cast<float>(rect.y))} }, // Top
+        { {cv::Point2f(static_cast<float>(rect.x), static_cast<float>(rect.y + rect.height)), cv::Point2f(static_cast<float>(rect.x + rect.width), static_cast<float>(rect.y + rect.height))} }, // Bottom
+        { {cv::Point2f(static_cast<float>(rect.x), static_cast<float>(rect.y)), cv::Point2f(static_cast<float>(rect.x), static_cast<float>(rect.y + rect.height))} }, // Left
+        { {cv::Point2f(static_cast<float>(rect.x + rect.width), static_cast<float>(rect.y)), cv::Point2f(static_cast<float>(rect.x + rect.width), static_cast<float>(rect.y + rect.height))} }  // Right
     };
 
     for (const auto& side : sides) {

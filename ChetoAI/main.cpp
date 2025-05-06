@@ -35,10 +35,10 @@ void processDetections(const std::vector<Detection>& detections, Ball& cueBall, 
             break;
         case ObjectType::PlayArea:
             table.bounds = cv::Rect(
-                (det.box.x / screenWidth) * 1920.0f,
-                (det.box.y / screenHeight) * 1080.0f,
-                (det.box.width / screenWidth) * 1920.0f,
-                (det.box.height / screenHeight) * 1080.0f
+                static_cast<int>((det.box.x / static_cast<float>(screenWidth)) * 1920.0f),
+                static_cast<int>((det.box.y / static_cast<float>(screenHeight)) * 1080.0f),
+                static_cast<int>((det.box.width / static_cast<float>(screenWidth)) * 1920.0f),
+                static_cast<int>((det.box.height / static_cast<float>(screenHeight)) * 1080.0f)
             );
             break;
         default:
@@ -47,7 +47,10 @@ void processDetections(const std::vector<Detection>& detections, Ball& cueBall, 
     }
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+
     // Initialize overlay
     OverlayData overlayData;
     HWND overlayHwnd = InitializeOverlay(hInstance, &overlayData);
@@ -67,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Initialize screen capture
     while (true) {
-        cv::Mat frame = captureWindow(L"8 Ball Pool");
+        cv::Mat frame = captureWindow(L"8 Ball Pool: The world's #1 Pool game - Google Chrome");
         if (frame.empty()) continue;
 
         int frameWidth = frame.cols;
