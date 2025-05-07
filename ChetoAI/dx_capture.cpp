@@ -71,6 +71,27 @@ cv::Mat captureDxFrame() {
 
     return bgr;
 }
+    
+cv::Mat captureDxWindow(const std::wstring& windowName) {
+    cv::Mat full = captureDxFrame(); // Fullscreen capture
+
+    HWND hwnd = FindWindowW(nullptr, windowName.c_str());
+    if (!hwnd || full.empty()) return cv::Mat();
+
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    POINT pt = { rc.left, rc.top };
+    ClientToScreen(hwnd, &pt); // Convert to screen coordinates
+    int width = rc.right - rc.left;
+    int height = rc.bottom - rc.top;
+
+    // Bounds safety check
+    if (pt.x < 0 || pt.y < 0 || pt.x + width > full.cols || pt.y + height > full.rows)
+        return cv::Mat();
+
+    return full(cv::Rect(pt.x, pt.y, width, height)).clone(); // Crop to the window area
+}
+
 
 void releaseDxCapture() {
     deskDupl.Reset();

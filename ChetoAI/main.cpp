@@ -89,8 +89,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
 
         // Capture the game frame (you can switch to nullptr for full screen)
-        //cv::Mat frame = captureWindow(L"image.jpg");
         cv::Mat frame = captureDxFrame();
+        //cv::Mat frame = captureDxWindow(L"image.jpg");
         cv::imwrite("debug_frame.jpg", frame);
         OutputDebugStringA("Saved debug_frame.jpg\n");
         if (frame.empty()){

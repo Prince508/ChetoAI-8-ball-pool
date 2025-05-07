@@ -7,4 +7,5 @@
 
 bool initializeDxCapture();
 cv::Mat captureDxFrame();
+cv::Mat captureDxWindow(const std::wstring& windowName);
 void releaseDxCapture();

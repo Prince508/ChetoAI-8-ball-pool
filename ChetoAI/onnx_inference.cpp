@@ -102,7 +102,7 @@ std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
 
     for (size_t i = 0; i < outputSize; i += 6) {
         float conf = outputData[i + 4];
-        if (conf > 0.4f) {
+        if (conf > 0.5f) {
             Detection det;
             det.box = cv::Rect(
                 static_cast<int>(outputData[i]),
