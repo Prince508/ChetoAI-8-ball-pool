@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 #include "overlay.h"
 #include "capture.h"
 #include "onnx_inference.h"
@@ -53,6 +53,7 @@ void processDetections(const std::vector<Detection>& detections, Ball& cueBall, 
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow) {
+    OutputDebugStringA("Main Called\n");
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -81,29 +82,44 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
 
         // Capture the game frame (you can switch to nullptr for full screen)
-        cv::Mat frame = captureWindow(L"8 Ball Pool: The world's #1 Pool game - Google Chrome");
-        if (frame.empty()) continue;
+        cv::Mat frame = captureWindow(L"image.jpg");
+        cv::imwrite("debug_frame.jpg", frame);
+        OutputDebugStringA("Saved debug_frame.jpg\n");
+        if (frame.empty()){
+            OutputDebugStringA("Frame is empty!\n"); // Add this line
+            continue;
+        }
+        OutputDebugStringA("Frame captured!\n");
 
         int frameWidth = frame.cols;
         int frameHeight = frame.rows;
 
         std::vector<Detection> detections = detector.runInference(frame);
+        if (detections.empty()) {
+            OutputDebugStringA("No detections found.\n");
+        }
+        else {
+            OutputDebugStringA("Detections found.\n");
+        }
 
         Ball cueBall, targetBall;
         Table table;
         processDetections(detections, cueBall, targetBall, table, frameWidth, frameHeight);
 
         ClearOverlay(&overlayData);
+        OutputDebugStringA("Cleared overlay.\n");
 
         overlayData.deviceContext->OMSetRenderTargets(1, &overlayData.renderTargetView, nullptr);
 
+        OutputDebugStringA("Manually Drawing Test Line\n");
         //Test
         DrawLine(100, 100, 600, 600, red, &overlayData);
 
         std::vector<LineSegment> guide = calculateGuideline(cueBall, targetBall, table);
-        for (const auto& segment : guide)
+        for (const auto& segment : guide) {
             DrawLine(segment.start.x, segment.start.y, segment.end.x, segment.end.y, red, &overlayData);
-
+            OutputDebugStringA("Guideline segment drawn.\n");
+        }
         PresentOverlay(&overlayData);
 
         if (GetAsyncKeyState(VK_END) & 1) break;

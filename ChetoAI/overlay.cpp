@@ -30,7 +30,7 @@ HWND InitializeOverlay(HINSTANCE hInstance, OverlayData* pOverlayData) {
         NULL, NULL, hInstance, NULL
     );
 
-    // Make the window transparent and click-through
+    // Make the window transparent and click-through 
     SetWindowLong(hwnd, GWL_EXSTYLE,
         GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
     SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 0, LWA_COLORKEY);
@@ -226,7 +226,7 @@ struct Vertex {
 };
 
 void DrawLine(float x1, float y1, float x2, float y2, float color[4], OverlayData* pOverlayData) {
-    OutputDebugStringA("Line drawing\n");
+    //OutputDebugStringA("Line drawing\n");
     float screenWidth = (float)GetSystemMetrics(SM_CXSCREEN);
     float screenHeight = (float)GetSystemMetrics(SM_CYSCREEN);
 
@@ -265,6 +265,7 @@ void DrawLine(float x1, float y1, float x2, float y2, float color[4], OverlayDat
     pOverlayData->deviceContext->Draw(2, 0);
 
     vertexBuffer->Release();
+    OutputDebugStringA("Line drawing\n");
 }
 
 void DrawCircle(float cx, float cy, float radius, float color[4], OverlayData* pOverlayData) {

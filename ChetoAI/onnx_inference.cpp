@@ -1,86 +1,42 @@
 #include "onnx_inference.h"
 #include <Windows.h>
-#include <algorithm>
-#include "Enums.h"
+#include <iostream>
 #include <string>
-#include <filesystem>
-
-#ifndef ORTCHAR_T
-#ifdef _WIN32
-#define ORTCHAR_T wchar_t
-#else
-#define ORTCHAR_T char
-#endif
-#endif
-
-// Converts UTF-8 std::string to std::wstring (common requirement on Windows)
-std::wstring utf8_to_wstring(const std::string& str) {
-    if (str.empty()) return std::wstring();
-
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-    if (size_needed <= 0) return std::wstring();
-
-    std::wstring wstr(size_needed, 0);
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], size_needed);
-    wstr.pop_back(); // Remove the null terminator added by MultiByteToWideChar
-    return wstr;
-}
-
-// Converts std::wstring to UTF-8 std::string
-std::string wstring_to_utf8(const std::wstring& wstr) {
-    if (wstr.empty()) return std::string();
-
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (size_needed <= 0) return std::string();
-
-    std::string str(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size_needed, nullptr, nullptr);
-    str.pop_back(); // Remove the null terminator added by WideCharToMultiByte
-    return str;
-}
-
+#include <algorithm>
+#include "enums.h"
 
 ONNXInference::ONNXInference(const std::string& modelPath)
     : env(ORT_LOGGING_LEVEL_WARNING, "ChetoAI") {
-
-    std::cout << "Trying to load model from: " << modelPath << std::endl;
-    if (!std::filesystem::exists(modelPath)) {
-        MessageBoxA(nullptr, ("Model file not found: " + modelPath).c_str(), "ONNX Load Error", MB_OK | MB_ICONERROR);
-        valid = false;
-        return;
-    }
-    
     try {
         sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-        // Convert the std::string model path to the required wide string format for Windows
-        #ifdef _WIN32
-            std::wstring modelPathW = utf8_to_wstring(modelPath);
-            const ORTCHAR_T* modelPathPtr = modelPathW.c_str();
-        #else
-            // On non-Windows platforms, ONNX Runtime usually expects char*
-            const ORTCHAR_T* modelPathPtr = modelPath.c_str();
-        #endif
 
-        // Now create the session using the correctly typed path pointer
-        session = std::make_unique<Ort::Session>(env, modelPathPtr, sessionOptions);
+        // Load model
+        std::wstring modelPathW(modelPath.begin(), modelPath.end());
+        session = std::make_unique<Ort::Session>(env, modelPathW.c_str(), sessionOptions);
         valid = true;
 
+        // Get input/output names
         Ort::AllocatorWithDefaultOptions allocator;
+        Ort::AllocatedStringPtr inputName = session->GetInputNameAllocated(0, allocator);
+        Ort::AllocatedStringPtr outputName = session->GetOutputNameAllocated(0, allocator);
+        inputNames.push_back(inputName.get());
+        outputNames.push_back(outputName.get());
 
-        // Use the C API to get the input name
-        char* inputName = nullptr;
-        Ort::GetApi().SessionGetInputName(*session, 0, allocator, &inputName);
-        std::string inputNameStr(inputName);
-        allocator.Free(inputName);
-        inputNamesStr.push_back(inputNameStr);
-        inputNames.push_back(inputNameStr.c_str());  // NEW
+        // Output model shape for debugging
+        Ort::TypeInfo inputTypeInfo = session->GetInputTypeInfo(0);
+        auto inputShape = inputTypeInfo.GetTensorTypeAndShapeInfo().GetShape();
+        Ort::TypeInfo outputTypeInfo = session->GetOutputTypeInfo(0);
+        auto outputShape = outputTypeInfo.GetTensorTypeAndShapeInfo().GetShape();
 
-        char* outputName = nullptr;
-        Ort::GetApi().SessionGetOutputName(*session, 0, allocator, &outputName);
-        std::string outputNameStr(outputName);
-        allocator.Free(outputName);
-        outputNamesStr.push_back(outputNameStr);
-        outputNames.push_back(outputNameStr.c_str());  // NEW
+        char buf[256];
+        sprintf_s(buf, "[Model] Input shape: %lldx%lldx%lldx%lld\n",
+            inputShape[0], inputShape[1], inputShape[2], inputShape[3]);
+        OutputDebugStringA(buf);
+
+        sprintf_s(buf, "[Model] Output shape total elements: %lld\n",
+            outputTypeInfo.GetTensorTypeAndShapeInfo().GetElementCount());
+        OutputDebugStringA(buf);
+
     }
     catch (const Ort::Exception& e) {
         valid = false;
@@ -90,7 +46,7 @@ ONNXInference::ONNXInference(const std::string& modelPath)
 
 std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
     std::vector<Detection> detections;
-    std::cout << "Detected: " << detections.size() << " objects." << std::endl;
+    
     if (!valid) {
         std::cerr << "[ERROR] ONNX model session is not valid." << std::endl;
         return detections;
@@ -129,8 +85,20 @@ std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
         return detections;
     }
 
+    char buf[256];
     float* outputData = outputTensors[0].GetTensorMutableData<float>();
     size_t outputSize = outputTensors[0].GetTensorTypeAndShapeInfo().GetElementCount();
+
+    sprintf_s(buf, "Raw output size: %zu\n", outputSize);
+    OutputDebugStringA(buf);
+
+    for (size_t i = 0; i + 5 < outputSize && i < 24; i += 6) {
+        sprintf_s(buf, "Det raw: [x=%.1f y=%.1f w=%.1f h=%.1f conf=%.2f class=%.0f]\n",
+            outputData[i], outputData[i + 1], outputData[i + 2],
+            outputData[i + 3], outputData[i + 4], outputData[i + 5]);
+        OutputDebugStringA(buf);
+    }
+
 
     for (size_t i = 0; i < outputSize; i += 6) {
         float conf = outputData[i + 4];
@@ -146,6 +114,7 @@ std::vector<Detection> ONNXInference::runInference(const cv::Mat& frame) {
             detections.push_back(det);
         }
     }
+    std::cout << "Detected: " << detections.size() << " objects." << std::endl;
 
     return detections;
 }
