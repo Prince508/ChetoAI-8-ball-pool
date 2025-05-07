@@ -1,6 +1,7 @@
 ﻿#include <Windows.h>
 #include "overlay.h"
-#include "capture.h"
+//#include "capture.h"
+#include "dx_capture.h"
 #include "onnx_inference.h"
 #include "physics.h"
 #include "enums.h"
@@ -72,6 +73,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         return 1;
     }
 
+    // Initialize DirectX Capture
+    if (!initializeDxCapture()) {
+        MessageBoxA(nullptr, "Failed to initialize DirectX Capture!", "Error", MB_OK | MB_ICONERROR);
+        return 1;
+    }
+
     MSG msg = { 0 };
     float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f }; // Line color
 
@@ -82,7 +89,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         }
 
         // Capture the game frame (you can switch to nullptr for full screen)
-        cv::Mat frame = captureWindow(L"image.jpg");
+        //cv::Mat frame = captureWindow(L"image.jpg");
+        cv::Mat frame = captureDxFrame();
         cv::imwrite("debug_frame.jpg", frame);
         OutputDebugStringA("Saved debug_frame.jpg\n");
         if (frame.empty()){
@@ -127,6 +135,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         Sleep(16); // ~60 FPS
     }
 
+	OutputDebugStringA("Exiting...\n");
+    releaseDxCapture();
     CleanupOverlay(&overlayData);
     return 0;
 }

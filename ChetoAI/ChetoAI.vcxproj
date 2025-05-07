@@ -110,7 +110,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(CoreLibraryDependencies);d3dcompiler.lib;d3d11.lib;onnxruntime.lib;opencv_world4110.lib;opencv_world4110d.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dxgi.lib
+
+;d3dcompiler.lib;d3d11.lib;onnxruntime.lib;opencv_world4110.lib;opencv_world4110d.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\opencv\build\x64\vc16\lib;C:\onnxruntime\lib;D:\AimBotAI\ChetoAI\external\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -131,18 +133,20 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\opencv\build\x64\vc16\lib;C:\onnxruntime\lib;D:\AimBotAI\ChetoAI\external\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);d3dcompiler.lib;d3d11.lib;onnxruntime.lib;opencv_world4110.lib;opencv_world4110d.lib</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);dxgi.lib
+
+;d3dcompiler.lib;d3d11.lib;onnxruntime.lib;opencv_world4110.lib;opencv_world4110d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="capture.cpp" />
+    <ClCompile Include="dx_capture.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="onnx_inference.cpp" />
     <ClCompile Include="overlay.cpp" />
     <ClCompile Include="physics.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="capture.h" />
+    <ClInclude Include="dx_capture.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="onnx_inference.h" />
     <ClInclude Include="overlay.h" />
