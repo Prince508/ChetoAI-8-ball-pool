@@ -67,7 +67,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     }
 
     // Initialize ONNX inference
-    ONNXInference detector("D:/AimBotAI/ChetoAI/ChetoAI/onnx_model/yolov11m-seg.onnx");
+    ONNXInference detector("D:/AimBotAI/ChetoAI/ChetoAI/onnx_model/yolov11mseg.onnx");
     if (!detector.isSessionValid()) {
         MessageBoxA(nullptr, "Failed to load ONNX model!", "Error", MB_OK);
         return 1;
